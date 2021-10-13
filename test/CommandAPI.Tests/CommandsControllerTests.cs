@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AutoMapper;
 using CommandAPI.Controllers;
 using CommandAPI.Data;
@@ -230,6 +231,28 @@ namespace CommandAPI.Tests
 
             var result = controller.PartialCommandUpdate(1,
                 new JsonPatchDocument<CommandUpdateDto>());
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+        [Fact]
+        public void DeleteCommand_Returns200OkStatus_WithAValidId()
+        {
+            _mockRepo.Setup(r => r.GetCommandById(1))
+                .Returns(GetCommands(1).FirstOrDefault());
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            var result = controller.DeleteCommand(1);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+        [Fact]
+        public void DeleteCommand_Return404NotFound_WithAnInvalidId()
+        {
+            _mockRepo.Setup(r => r.GetCommandById(1))
+                .Returns(() => null);
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            var result = controller.DeleteCommand(1);
 
             Assert.IsType<NotFoundResult>(result);
         }
