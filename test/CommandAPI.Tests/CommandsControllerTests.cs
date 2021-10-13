@@ -165,6 +165,33 @@ namespace CommandAPI.Tests
             //Assert
             Assert.IsType<ActionResult<CommandReadDto>>(result);
         }
+
+        [Fact]
+        public void CreateCommand_ReturnsCorrectType_WhenValidObjectIsSubmitted()
+        {
+            //arrange
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            //act
+            var result = controller.CreateCommand(new CommandCreateDto());
+
+            //assert
+            Assert.IsType<ActionResult<CommandReadDto>>(result);
+        }
+
+        [Fact]
+        public void CreateCommand_ReturnsCreatedAtRoute_WhenValidObjectSubmitted()
+        {
+            //arrange
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            //act
+            var result = controller.CreateCommand(new CommandCreateDto());
+
+            //assert
+            Assert.IsType<CreatedAtRouteResult>(result.Result);
+
+        }
         public void Dispose()
         {
             _mockRepo = null;
