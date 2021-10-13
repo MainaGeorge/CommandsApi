@@ -63,7 +63,7 @@ namespace CommandAPI.Tests
         }
 
         [Fact]
-        public void GetAllCommands_ReturnsASingleItem_WhenDbHasJustOneItem()
+        public void GetCommands_ReturnsASingleItem_WhenDbHasJustOneItem()
         {
             //Arrange
             _mockRepo.Setup(repo => repo.GetAllCommands())
@@ -108,6 +108,62 @@ namespace CommandAPI.Tests
 
             //Assert
             Assert.IsType<ActionResult<IEnumerable<CommandReadDto>>>(result);
+        }
+
+        [Fact]
+        public void GetCommandById_Returns404NotFound_WhenNonExistentIdProvided()
+        {
+            //arrange
+            _mockRepo.Setup(r => r.GetCommandById(0))
+                .Returns(() => null);
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            //act
+            var result = controller.GetCommandById(0);
+
+            //Assert
+            Assert.IsType<NotFoundResult>(result.Result);
+        }
+        [Fact]
+        public void GetCommandById_Returns200Ok_WhenAnExistingIdProvided()
+        {
+            //arrange
+            _mockRepo.Setup(r => r.GetCommandById(1))
+                .Returns(new Command
+                {
+                    Id = 0,
+                    HowTo = "How to generate a migration",
+                    CommandLine = "dotnet ef migrations add <Name of Migration>",
+                    Platform = ".Net Core EF"
+                });
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            //Act
+            var result = controller.GetCommandById(1);
+
+            //Assert
+            Assert.IsType<OkObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public void GetCommandById_ReturnsCorrectType_GivenAnExistingId()
+        {
+            //arrange
+            _mockRepo.Setup(r => r.GetCommandById(1))
+                .Returns(new Command
+                {
+                    Id = 0,
+                    HowTo = "How to generate a migration",
+                    CommandLine = "dotnet ef migrations add <Name of Migration>",
+                    Platform = ".Net Core EF"
+                });
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            //Act
+            var result = controller.GetCommandById(1);
+
+            //Assert
+            Assert.IsType<ActionResult<CommandReadDto>>(result);
         }
         public void Dispose()
         {
