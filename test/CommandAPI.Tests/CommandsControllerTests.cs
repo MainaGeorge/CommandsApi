@@ -7,6 +7,7 @@ using CommandAPI.Data;
 using CommandAPI.Dtos;
 using CommandAPI.Models;
 using CommandAPI.Profiles;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -191,6 +192,46 @@ namespace CommandAPI.Tests
             //assert
             Assert.IsType<CreatedAtRouteResult>(result.Result);
 
+        }
+
+        [Fact]
+        public void UpdateCommand_ReturnsNoContent_WhenAnExistentIdIsProvided()
+        {
+            _mockRepo.Setup(r => r.GetCommandById(1))
+                .Returns(new Command
+                {
+                    Id = 0,
+                    HowTo = "How to generate a migration",
+                    CommandLine = "dotnet ef migrations add <Name of Migration>",
+                    Platform = ".Net Core EF"
+                });
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            var result = controller.UpdateCommand(new CommandUpdateDto() { }, 1);
+
+            Assert.IsType<NoContentResult>(result);
+        }
+        [Fact]
+        public void UpdateCommand_Returns404NotFound_WithInvalidId()
+        {
+            _mockRepo.Setup(r => r.GetCommandById(0))
+                .Returns(() => null);
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            var result = controller.UpdateCommand(new CommandUpdateDto(), 0);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+        [Fact]
+        public void PartialCommandUpdate_Returns404NotFound_WithAnInvalidId()
+        {
+            _mockRepo.Setup(r => r.GetCommandById(1)).Returns(() => null);
+            var controller = new CommandsController(_mockRepo.Object, _mapper);
+
+            var result = controller.PartialCommandUpdate(1,
+                new JsonPatchDocument<CommandUpdateDto>());
+
+            Assert.IsType<NotFoundResult>(result);
         }
         public void Dispose()
         {
